@@ -1,0 +1,75 @@
+
+//+------------------------------------------------------------------+
+//|                                                    ATR Stop Loss Finder |
+//|                             Copyright 2021, Forex Robot Easy Team |
+//|                                           https://www.forexroboteasy.com |
+//+------------------------------------------------------------------+
+#property strict
+
+// Input parameters
+input int Length = 14;                 // Length for ATR calculation
+input int Smoothing = 3;               // Smoothing factor for ATR
+input double Multiplier1 = 1.0;        // First multiplier for stop loss and take profit
+input double Multiplier2 = 0.0;        // Second multiplier for stop loss and take profit (optional)
+
+// Customization settings
+input bool EnableHighPrice = true;     // Enable high price customization
+input bool EnableLowPrice = true;      // Enable low price customization
+input bool EnableShowPriceLine = true; // Enable show price line customization
+input color ColorHigh = clrRed;        // Custom color for high price
+input color ColorLow = clrGreen;       // Custom color for low price
+input color ColorPriceLine = clrBlue;  // Custom color for price line
+
+// Global variables
+double atrBuffer[];                    // Buffer for storing ATR values
+double stopLoss;                       // Stop loss value
+double takeProfit;                     // Take profit value
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Set indicator buffers
+    SetIndexBuffer(0, atrBuffer, INDICATOR_DATA);
+    
+    // Set indicator label
+    IndicatorShortName('ATR Stop Loss Finder');
+    
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+    // Calculate ATR
+    for(int i = prev_calculated; i < rates_total; i++)
+    {
+        atrBuffer[i] = iATR(Symbol(), PERIOD_CURRENT, Length, i);
+    }
+    
+    // Calculate stop loss and take profit
+    stopLoss = low[0] - atrBuffer[0] * Multiplier1 - atrBuffer[0] * Multiplier2;
+    takeProfit = high[0] + atrBuffer[0] * Multiplier1 + atrBuffer[0] * Multiplier2;
+    
+    return(rates_total);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator deinitialization function                       |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Placeholder for deinitialization tasks
+}
